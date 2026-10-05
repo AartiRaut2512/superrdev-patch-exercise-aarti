@@ -8,17 +8,24 @@ export function useTasks(query, status, page, pageSize) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    setLoading(true);
+    const timer = setTimeout(() => {
+      setLoading(true);
+      setError(null);
 
-    fetchTasks({ query, status, page, pageSize })
-      .then((data) => {
-        setTasks(data.items);
-        setTotal(data.total);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-      });
+      fetchTasks({ query, status, page, pageSize })
+        .then((data) => {
+          setTasks(data.items || []);
+          setTotal(data.total || 0);
+        })
+        .catch((err) => {
+          setError(err.message || 'Failed to load tasks.');
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [query, status, page, pageSize]);
 
   return { tasks, total, loading, error };
